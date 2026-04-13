@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react';
 
-// O endereço da sua API Spring Boot continua o mesmo!
 const API_BASE_URL = 'http://localhost:8080/api/chamados';
 
 function App() {
-  // ==========================================
-  // 1. ESTADOS (A Memória do React)
-  // Em vez de variáveis soltas, usamos useState. 
-  // Quando essas variáveis mudam, o React redesenha a tela sozinho!
-  // ==========================================
   const [chamados, setChamados] = useState([]);
   const [paginaAtual, setPaginaAtual] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -16,18 +10,17 @@ function App() {
   const [erro, setErro] = useState(null);
 
   // ==========================================
-  // 2. BUSCANDO OS DADOS DA API
+  // BUSCANDO OS DADOS DA API
   // ==========================================
   const carregarFilaTI = async () => {
     try {
-      const url = `${API_BASE_URL}?page=${paginaAtual}&size=10&sort=${ordenacao.campo},${ordenacao.direcao}`;
+      // ALTERAÇÃO 1 AQUI: Adicionamos sort=status,asc para os Resolvidos ficarem no final
+      const url = `${API_BASE_URL}?page=${paginaAtual}&size=10&sort=status,asc&sort=${ordenacao.campo},${ordenacao.direcao}`;
       const resposta = await fetch(url);
       
       if (!resposta.ok) throw new Error('Falha ao buscar os dados da API.');
       
       const dadosPaginados = await resposta.json();
-      
-      // Atualizamos a "memória". O React vai ver isso e atualizar o HTML automaticamente.
       setChamados(dadosPaginados.content);
       setTotalPages(dadosPaginados.totalPages === 0 ? 1 : dadosPaginados.totalPages);
       setErro(null);
@@ -37,20 +30,18 @@ function App() {
     }
   };
 
-  // useEffect substitui o nosso antigo "DOMContentLoaded". 
-  // Ele avisa o React: "Sempre que a página ou a ordenação mudarem, rode essa função de carregar".
   useEffect(() => {
     carregarFilaTI();
   }, [paginaAtual, ordenacao]);
 
   // ==========================================
-  // 3. AÇÕES (Assumir e Resolver)
+  // AÇÕES E ORDENAÇÃO
   // ==========================================
   const assumirChamado = async (id) => {
     if (!window.confirm(`Deseja assumir o chamado #${id}?`)) return;
     try {
       await fetch(`${API_BASE_URL}/${id}/atender`, { method: 'PUT' });
-      carregarFilaTI(); // Recarrega a lista para atualizar o status
+      carregarFilaTI(); 
     } catch (e) {
       alert("Erro ao assumir chamado.");
     }
@@ -66,7 +57,6 @@ function App() {
     }
   };
 
-  // Função para lidar com o clique no cabeçalho da tabela
   const mudarOrdenacao = (campo) => {
     setOrdenacao(prev => ({
       campo: campo,
@@ -75,9 +65,9 @@ function App() {
     setPaginaAtual(0);
   };
 
+
   // ==========================================
-  // 4. O VISUAL (JSX)
-  // Aqui misturamos HTML com JavaScript usando as chaves { }
+  // O VISUAL (JSX)
   // ==========================================
   return (
     <div>
@@ -104,7 +94,6 @@ function App() {
               </tr>
             </thead>
             <tbody>
-              {/* O famoso .map()! Ele substitui o forEach e os insertRow() */}
               {chamados.length === 0 ? (
                 <tr><td colSpan="6" style={{ textAlign: 'center' }}>Nenhum chamado no momento.</td></tr>
               ) : (
@@ -120,23 +109,32 @@ function App() {
                         {chamado.status}
                       </span>
                     </td>
-                    <td>{chamado.prioridade || '-'}</td>
+                    
+                    {/* ALTERAÇÃO 2 AQUI: A Prioridade limpando o V1_ */}
+                    <td>
+                      {chamado.prioridade ? (
+                        <span style={{ color: getCorPrioridade(chamado.prioridade), fontWeight: 'bold' }}>
+                          {/* O .split('_')[1] pega tudo depois do underline. Ex: V1_ALTA vira ALTA */}
+                          {chamado.prioridade.includes('_') ? chamado.prioridade.split('_')[1] : chamado.prioridade}
+                        </span>
+                      ) : '-'}
+                    </td>
+
                     <td>{chamado.dataAbertura ? new Date(chamado.dataAbertura).toLocaleDateString('pt-BR') : '-'}</td>
                     
-                    {/* Botões Dinâmicos! */}
                     <td style={{ display: 'flex', gap: '10px' }}>
                       {chamado.status === 'ABERTO' && (
-                        <button style={{ backgroundColor: '#ffc107', color: '#333' }} onClick={() => assumirChamado(chamado.id)}>
+                        <button style={{ backgroundColor: '#ffc107', color: '#333', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => assumirChamado(chamado.id)}>
                           Assumir
                         </button>
                       )}
                       {chamado.status === 'EM_ANDAMENTO' && (
-                        <button style={{ backgroundColor: '#28a745' }} onClick={() => resolverChamado(chamado.id)}>
+                        <button style={{ backgroundColor: '#28a745', color: 'white', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => resolverChamado(chamado.id)}>
                           Resolver
                         </button>
                       )}
                       {chamado.status === 'RESOLVIDO' && (
-                        <span style={{ color: 'green' }}>✔ Finalizado</span>
+                        <span style={{ color: 'green', fontWeight: 'bold' }}>✔ Finalizado</span>
                       )}
                     </td>
                   </tr>
@@ -146,12 +144,20 @@ function App() {
           </table>
 
           {/* Paginação */}
-          <div className="paginacao">
-            <button disabled={paginaAtual === 0} onClick={() => setPaginaAtual(prev => prev - 1)}>
+          <div className="paginacao" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', padding: '1rem', backgroundColor: '#f8f9fa', borderRadius: '4px' }}>
+            <button 
+              disabled={paginaAtual === 0} 
+              onClick={() => setPaginaAtual(prev => prev - 1)}
+              style={{ padding: '0.5rem 1rem', cursor: paginaAtual === 0 ? 'not-allowed' : 'pointer' }}
+            >
               « Anterior
             </button>
-            <span>Página {paginaAtual + 1} de {totalPages}</span>
-            <button disabled={paginaAtual + 1 >= totalPages} onClick={() => setPaginaAtual(prev => prev + 1)}>
+            <span style={{ alignSelf: 'center', fontWeight: 'bold' }}>Página {paginaAtual + 1} de {totalPages}</span>
+            <button 
+              disabled={paginaAtual + 1 >= totalPages} 
+              onClick={() => setPaginaAtual(prev => prev + 1)}
+              style={{ padding: '0.5rem 1rem', cursor: paginaAtual + 1 >= totalPages ? 'not-allowed' : 'pointer' }}
+            >
               Próxima »
             </button>
           </div>
