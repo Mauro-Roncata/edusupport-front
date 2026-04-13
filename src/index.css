@@ -29,6 +29,7 @@ header p {
  /* 3. LAYOUT PRINCIPAL (Flexbox)*/
 .container {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap; /* Se a tela for pequena, joga o painel da direita pra baixo */
     gap: 2rem;
     padding: 2rem;
@@ -141,4 +142,14 @@ tbody tr:hover {
 
 .paginacao button:hover:not(:disabled) {
     background-color: #5a6268;
+}
+
+.painel-listagem-ti {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    width: 100%; 
+    max-width: 1000px; /* Limita a largura máxima para ficar elegante */
+    margin: 0 auto; /* Centraliza a caixa branca dentro do espaço disponível */
 }

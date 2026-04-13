@@ -73,7 +73,7 @@ function App() {
     <div>
       <header className="header-ti">
         <h1>EduSupport SMED - Central de TI</h1>
-        <p>Visão do Técnico (React Edition 🚀)</p>
+        <p>Visão do Técnico</p>
       </header>
 
       <main className="container">
@@ -113,7 +113,7 @@ function App() {
                     {/* ALTERAÇÃO 2 AQUI: A Prioridade limpando o V1_ */}
                     <td>
                       {chamado.prioridade ? (
-                        <span style={{ color: getCorPrioridade(chamado.prioridade), fontWeight: 'bold' }}>
+                        <span style={{ color: 'black', fontWeight: 'bold' }}>
                           {/* O .split('_')[1] pega tudo depois do underline. Ex: V1_ALTA vira ALTA */}
                           {chamado.prioridade.includes('_') ? chamado.prioridade.split('_')[1] : chamado.prioridade}
                         </span>
