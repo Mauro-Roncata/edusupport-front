@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 
 const API_BASE_URL = 'http://localhost:8080/api/chamados';
 
@@ -11,6 +12,7 @@ function PainelSecretaria() {
   const [descricao, setDescricao] = useState('');
   const [categoria, setCategoria] = useState('');
   const [prioridade, setPrioridade] = useState('V2_MEDIA'); // Estado para a prioridade
+  const [idExpandido, setIdExpandido] = useState(null);
 
   const carregarMeusChamados = async () => {
     try {
@@ -171,6 +173,7 @@ function PainelTI() {
   const [paginaAtual, setPaginaAtual] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [ordenacao, setOrdenacao] = useState({ campo: 'dataAbertura', direcao: 'desc' });
+  const [idExpandido, setIdExpandido] = useState(null);
 
   const carregarFilaTI = async () => {
     try {
@@ -221,36 +224,64 @@ function PainelTI() {
               <th>Ações (TI)</th>
             </tr>
           </thead>
+          
           <tbody>
             {chamados.map(chamado => (
-              <tr key={chamado.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
-                <td>{chamado.titulo}</td>
-                <td>
-                  <span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>
-                    {chamado.status}
-                  </span>
-                </td>
-                <td>
-                  <span style={{ fontWeight: 'bold' }}>
-                    {chamado.prioridade ? (chamado.prioridade.includes('_') ? chamado.prioridade.split('_')[1] : chamado.prioridade) : '-'}
-                  </span>
-                </td>
-                <td>{chamado.dataAbertura ? new Date(chamado.dataAbertura).toLocaleDateString('pt-BR') : '-'}</td>
-                <td style={{ display: 'flex', gap: '10px', padding: '0.5rem 0' }}>
-                  {chamado.status === 'ABERTO' && (
-                    <button style={{ backgroundColor: '#ffc107', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => assumirChamado(chamado.id)}>
-                      Assumir
-                    </button>
-                  )}
-                  {chamado.status === 'EM_ANDAMENTO' && (
-                    <button style={{ backgroundColor: '#28a745', color: 'white', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => resolverChamado(chamado.id)}>
-                      Resolver
-                    </button>
-                  )}
-                  {chamado.status === 'RESOLVIDO' && <span style={{ color: 'green', fontWeight: 'bold' }}>✔ Finalizado</span>}
-                </td>
-              </tr>
+              /* React.Fragment substitui a <tr> principal para podermos colocar 2 linhas (tr) juntas */
+              <React.Fragment key={chamado.id}>
+                
+                {/* 1. LINHA PRINCIPAL (Agora ela tem o onClick para expandir) */}
+                <tr 
+                  onClick={() => setIdExpandido(idExpandido === chamado.id ? null : chamado.id)} 
+                  style={{ 
+                    borderBottom: '1px solid #eee', 
+                    cursor: 'pointer', 
+                    backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' 
+                  }}
+                >
+                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
+                  <td style={{ fontWeight: 'bold' }}>{chamado.titulo}</td>
+                  <td>
+                    <span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>
+                      {chamado.status}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 'bold' }}>
+                      {chamado.prioridade ? (chamado.prioridade.includes('_') ? chamado.prioridade.split('_')[1] : chamado.prioridade) : '-'}
+                    </span>
+                  </td>
+                  <td>{chamado.dataAbertura ? new Date(chamado.dataAbertura).toLocaleDateString('pt-BR') : '-'}</td>
+                  
+                  {/* Ações não disparam o clique da linha graças ao e.stopPropagation() */}
+                  <td style={{ display: 'flex', gap: '10px', padding: '0.5rem 0' }} onClick={(e) => e.stopPropagation()}>
+                    {chamado.status === 'ABERTO' && (
+                      <button style={{ backgroundColor: '#ffc107', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => assumirChamado(chamado.id)}>
+                        Assumir
+                      </button>
+                    )}
+                    {chamado.status === 'EM_ANDAMENTO' && (
+                      <button style={{ backgroundColor: '#28a745', color: 'white', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => resolverChamado(chamado.id)}>
+                        Resolver
+                      </button>
+                    )}
+                    {chamado.status === 'RESOLVIDO' && <span style={{ color: 'green', fontWeight: 'bold' }}>✔ Finalizado</span>}
+                  </td>
+                </tr>
+
+                {/* 2. LINHA DA DESCRIÇÃO (Só renderiza se o ID desta linha for o ID expandido no momento) */}
+                {idExpandido === chamado.id && (
+                  <tr>
+                    <td colSpan="6" style={{ padding: '1.5rem', backgroundColor: '#fdfdfd', borderLeft: '4px solid #0056b3', borderBottom: '2px solid #ccc' }}>
+                      <strong style={{ color: '#0056b3' }}>Descrição Detalhada do Problema:</strong>
+                      <p style={{ marginTop: '0.5rem', color: '#444', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {chamado.descricao || "Nenhuma descrição adicional foi fornecida pela Secretaria no momento da abertura deste chamado."}
+                      </p>
+                    </td>
+                  </tr>
+                )}
+                
+              </React.Fragment>
             ))}
           </tbody>
         </table>
