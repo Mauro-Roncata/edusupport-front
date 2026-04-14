@@ -8,11 +8,12 @@ const API_BASE_URL = 'http://localhost:8080/api/chamados';
 function PainelSecretaria() {
   const [chamados, setChamados] = useState([]);
   const [titulo, setTitulo] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [categoria, setCategoria] = useState('');
+  const [prioridade, setPrioridade] = useState('V2_MEDIA'); // Estado para a prioridade
 
   const carregarMeusChamados = async () => {
     try {
-      // Como ainda não temos login, vamos buscar os mais recentes (sem paginação complexa por enquanto)
       const resposta = await fetch(`${API_BASE_URL}?page=0&size=20&sort=dataAbertura,desc`);
       const dados = await resposta.json();
       setChamados(dados.content);
@@ -26,12 +27,14 @@ function PainelSecretaria() {
   }, []);
 
   const abrirChamado = async (e) => {
-    e.preventDefault(); // Evita que a página recarregue ao enviar o form
+    e.preventDefault();
     
+    // Objeto completo para o Java
     const novoChamado = {
       titulo: titulo,
-      categoria: categoria
-      // O status 'ABERTO' e a 'data' o seu Java deve preencher automaticamente!
+      descricao: descricao,
+      categoria: categoria,
+      prioridade: prioridade 
     };
 
     try {
@@ -43,55 +46,90 @@ function PainelSecretaria() {
 
       if (resposta.ok) {
         alert('Chamado aberto com sucesso!');
-        setTitulo(''); // Limpa o form
+        setTitulo('');
         setCategoria('');
-        carregarMeusChamados(); // Atualiza a tabela na hora
+        setPrioridade('V2_MEDIA');
+        carregarMeusChamados();
       } else {
         alert('Erro ao abrir chamado. Verifique os campos.');
       }
     } catch (erro) {
-      alert('Erro de conexão com o servidor.');
+      alert('Erro de conexão.');
     }
   };
 
   return (
-    <div className="container" style={{ flexDirection: 'column', alignItems: 'center' }}>
+    <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       
-      {/* Formulário de Abertura */}
       <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '800px', marginBottom: '2rem', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h2>Abrir Novo Chamado</h2>
         <form onSubmit={abrirChamado} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          {/* CAMPO TITULO */}
           <div>
-            <label style={{ fontWeight: 'bold' }}>Descrição / Problema:</label>
+            <label style={{ fontWeight: 'bold' }}>Título do Problema:</label>
             <input 
               type="text" 
               value={titulo} 
               onChange={(e) => setTitulo(e.target.value)} 
               required 
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
-              placeholder="Ex: Computador da sala 3 não liga"
+              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+              placeholder="Ex: Impressora da secretaria travada"
             />
           </div>
+
+          {/* CAMPO DESCRICAO */}
+          <div>
+            <label style={{ fontWeight: 'bold' }}>Descrição do Problema:</label>
+            <input 
+              type="text" 
+              value={descricao} 
+              onChange={(e) => setDescricao(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+              placeholder="Ex: ChromeBook não liga e nem carrega..."
+            />
+          </div>
+
+
+          {/* CAMPO CATEGORIA */}
           <div>
             <label style={{ fontWeight: 'bold' }}>Categoria:</label>
             <select 
               value={categoria} 
               onChange={(e) => setCategoria(e.target.value)} 
               required
-              style={{ width: '100%', padding: '0.5rem', marginTop: '0.5rem' }}
+              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
             >
-              <option value="">Selecione uma categoria...</option>
+              <option value="">Selecione...</option>
               <option value="REDE_INTERNET">Rede / Internet</option>
               <option value="HARDWARE">Equipamento / Hardware</option>
               <option value="IMPRESSORA">Impressora</option>
-              <option value="SISTEMA_SOFTWARE">Sistemas / Software</option>
+              <option value="SOFTWARE">Sistemas / Software</option>
             </select>
           </div>
-          <button type="submit" style={{ backgroundColor: '#0056b3', color: 'white', padding: '0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '1rem' }}>
-            Enviar Chamado para a TI
+
+          {/* NOVO CAMPO PRIORIDADE */}
+          <div>
+            <label style={{ fontWeight: 'bold' }}>Urgência / Prioridade:</label>
+            <select 
+              value={prioridade} 
+              onChange={(e) => setPrioridade(e.target.value)} 
+              required
+              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+              <option value="V1_ALTA">Alta (Impacta a escola inteira)</option>
+              <option value="V2_MEDIA">Média (Impacta uma sala/setor)</option>
+              <option value="V3_BAIXA">Baixa (Dúvida ou ajuste simples)</option>
+            </select>
+          </div>
+
+          <button type="submit" style={{ backgroundColor: '#0056b3', color: 'white', padding: '1rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', marginTop: '1rem' }}>
+            Registrar Chamado
           </button>
         </form>
       </section>
+
 
       {/* Tabela de Leitura (SEM botões de ação) */}
       <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '800px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
