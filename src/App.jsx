@@ -1,5 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
+// IMPORT NOVO: Ferramentas do React Router
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 
 const API_BASE_URL = 'http://localhost:8080/api/chamados';
 
@@ -11,7 +12,7 @@ function PainelSecretaria() {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [categoria, setCategoria] = useState('');
-  const [prioridade, setPrioridade] = useState('V2_MEDIA'); // Estado para a prioridade
+  const [prioridade, setPrioridade] = useState('V2_MEDIA'); 
   const [idExpandido, setIdExpandido] = useState(null);
 
   const carregarMeusChamados = async () => {
@@ -31,7 +32,6 @@ function PainelSecretaria() {
   const abrirChamado = async (e) => {
     e.preventDefault();
     
-    // Objeto completo para o Java
     const novoChamado = {
       titulo: titulo,
       descricao: descricao,
@@ -49,6 +49,7 @@ function PainelSecretaria() {
       if (resposta.ok) {
         alert('Chamado aberto com sucesso!');
         setTitulo('');
+        setDescricao('');
         setCategoria('');
         setPrioridade('V2_MEDIA');
         carregarMeusChamados();
@@ -67,42 +68,19 @@ function PainelSecretaria() {
         <h2>Abrir Novo Chamado</h2>
         <form onSubmit={abrirChamado} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           
-          {/* CAMPO TITULO */}
           <div>
             <label style={{ fontWeight: 'bold' }}>Título do Problema:</label>
-            <input 
-              type="text" 
-              value={titulo} 
-              onChange={(e) => setTitulo(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-              placeholder="Ex: Impressora da secretaria travada"
-            />
+            <input type="text" value={titulo} onChange={(e) => setTitulo(e.target.value)} required style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }} placeholder="Ex: Impressora da secretaria travada" />
           </div>
 
-          {/* CAMPO DESCRICAO */}
           <div>
             <label style={{ fontWeight: 'bold' }}>Descrição do Problema:</label>
-            <input 
-              type="text" 
-              value={descricao} 
-              onChange={(e) => setDescricao(e.target.value)} 
-              required 
-              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-              placeholder="Ex: ChromeBook não liga e nem carrega..."
-            />
+            <input type="text" value={descricao} onChange={(e) => setDescricao(e.target.value)} required style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }} placeholder="Ex: ChromeBook não liga e nem carrega..." />
           </div>
 
-
-          {/* CAMPO CATEGORIA */}
           <div>
             <label style={{ fontWeight: 'bold' }}>Categoria:</label>
-            <select 
-              value={categoria} 
-              onChange={(e) => setCategoria(e.target.value)} 
-              required
-              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
+            <select value={categoria} onChange={(e) => setCategoria(e.target.value)} required style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}>
               <option value="">Selecione...</option>
               <option value="REDE_INTERNET">Rede / Internet</option>
               <option value="HARDWARE">Equipamento / Hardware</option>
@@ -111,15 +89,9 @@ function PainelSecretaria() {
             </select>
           </div>
 
-          {/* NOVO CAMPO PRIORIDADE */}
           <div>
             <label style={{ fontWeight: 'bold' }}>Urgência / Prioridade:</label>
-            <select 
-              value={prioridade} 
-              onChange={(e) => setPrioridade(e.target.value)} 
-              required
-              style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}
-            >
+            <select value={prioridade} onChange={(e) => setPrioridade(e.target.value)} required style={{ width: '100%', padding: '0.6rem', marginTop: '0.5rem', borderRadius: '4px', border: '1px solid #ccc' }}>
               <option value="V1_ALTA">Alta (Impacta a escola inteira)</option>
               <option value="V2_MEDIA">Média (Impacta uma sala/setor)</option>
               <option value="V3_BAIXA">Baixa (Dúvida ou ajuste simples)</option>
@@ -132,8 +104,7 @@ function PainelSecretaria() {
         </form>
       </section>
 
-
-      {/* Tabela de Leitura (SEM botões de ação) */}
+      {/* Tabela da Secretaria (Agora com o clique para ver a descrição também!) */}
       <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '800px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h2>Meus Chamados Recentes</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
@@ -147,16 +118,33 @@ function PainelSecretaria() {
           </thead>
           <tbody>
             {chamados.map(chamado => (
-              <tr key={chamado.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
-                <td>{chamado.titulo}</td>
-                <td>
-                  <span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>
-                    {chamado.status}
-                  </span>
-                </td>
-                <td>{chamado.categoria ? chamado.categoria.replace('_', ' ') : '-'}</td>
-              </tr>
+              <React.Fragment key={chamado.id}>
+                <tr 
+                  onClick={() => setIdExpandido(idExpandido === chamado.id ? null : chamado.id)} 
+                  style={{ borderBottom: '1px solid #eee', cursor: 'pointer', backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' }}
+                >
+                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
+                  <td style={{ fontWeight: 'bold' }}>{chamado.titulo}</td>
+                  <td>
+                    <span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>
+                      {chamado.status}
+                    </span>
+                  </td>
+                  <td>{chamado.categoria ? chamado.categoria.replace('_', ' ') : '-'}</td>
+                </tr>
+
+                {/* Linha da Descrição */}
+                {idExpandido === chamado.id && (
+                  <tr>
+                    <td colSpan="4" style={{ padding: '1.5rem', backgroundColor: '#fdfdfd', borderLeft: '4px solid #0056b3', borderBottom: '2px solid #ccc' }}>
+                      <strong style={{ color: '#0056b3' }}>Descrição Detalhada do Problema:</strong>
+                      <p style={{ marginTop: '0.5rem', color: '#444', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
+                        {chamado.descricao || "Nenhuma descrição detalhada fornecida."}
+                      </p>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
@@ -166,7 +154,7 @@ function PainelSecretaria() {
 }
 
 // =========================================================================
-// 2. TELA DA TI (A sua tela completa, intocada!)
+// 2. TELA DA TI (Intocada, com suas alterações da descrição)
 // =========================================================================
 function PainelTI() {
   const [chamados, setChamados] = useState([]);
@@ -227,17 +215,11 @@ function PainelTI() {
           
           <tbody>
             {chamados.map(chamado => (
-              /* React.Fragment substitui a <tr> principal para podermos colocar 2 linhas (tr) juntas */
               <React.Fragment key={chamado.id}>
                 
-                {/* 1. LINHA PRINCIPAL (Agora ela tem o onClick para expandir) */}
                 <tr 
                   onClick={() => setIdExpandido(idExpandido === chamado.id ? null : chamado.id)} 
-                  style={{ 
-                    borderBottom: '1px solid #eee', 
-                    cursor: 'pointer', 
-                    backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' 
-                  }}
+                  style={{ borderBottom: '1px solid #eee', cursor: 'pointer', backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' }}
                 >
                   <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
                   <td style={{ fontWeight: 'bold' }}>{chamado.titulo}</td>
@@ -253,7 +235,6 @@ function PainelTI() {
                   </td>
                   <td>{chamado.dataAbertura ? new Date(chamado.dataAbertura).toLocaleDateString('pt-BR') : '-'}</td>
                   
-                  {/* Ações não disparam o clique da linha graças ao e.stopPropagation() */}
                   <td style={{ display: 'flex', gap: '10px', padding: '0.5rem 0' }} onClick={(e) => e.stopPropagation()}>
                     {chamado.status === 'ABERTO' && (
                       <button style={{ backgroundColor: '#ffc107', padding: '0.4rem 0.8rem', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => assumirChamado(chamado.id)}>
@@ -269,7 +250,6 @@ function PainelTI() {
                   </td>
                 </tr>
 
-                {/* 2. LINHA DA DESCRIÇÃO (Só renderiza se o ID desta linha for o ID expandido no momento) */}
                 {idExpandido === chamado.id && (
                   <tr>
                     <td colSpan="6" style={{ padding: '1.5rem', backgroundColor: '#fdfdfd', borderLeft: '4px solid #0056b3', borderBottom: '2px solid #ccc' }}>
@@ -297,41 +277,51 @@ function PainelTI() {
 }
 
 // =========================================================================
-// 3. O "MAESTRO" (Controla qual tela aparece)
+// 3. O CABEÇALHO COM NAVEGAÇÃO (Novo!)
 // =========================================================================
-function App() {
-  // Esse estado simula quem está logado no sistema!
-  const [perfilAtivo, setPerfilAtivo] = useState('TI');
+function HeaderNavegacao() {
+  const location = useLocation(); // Lê a URL atual
+  const isTI = location.pathname === '/ti';
 
   return (
-    <div>
-      {/* Barra de Navegação / Cabeçalho Global */}
-      <header style={{ backgroundColor: perfilAtivo === 'TI' ? '#343a40' : '#0056b3', padding: '1rem', color: 'white', textAlign: 'center', transition: 'background-color 0.3s' }}>
-        <h1>EduSupport SMED</h1>
-        <p>{perfilAtivo === 'TI' ? 'Visão do Técnico de TI' : 'Visão da Diretoria (Escolas)'}</p>
-        
-        {/* Simulador de Login */}
-        <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <button 
-            onClick={() => setPerfilAtivo('SECRETARIA')}
-            style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: perfilAtivo === 'SECRETARIA' ? 'white' : 'transparent', color: perfilAtivo === 'SECRETARIA' ? '#0056b3' : 'white', border: '1px solid white', borderRadius: '4px' }}
-          >
-            Simular Login: Diretora
+    <header style={{ backgroundColor: isTI ? '#343a40' : '#0056b3', padding: '1rem', color: 'white', textAlign: 'center', transition: 'background-color 0.3s' }}>
+      <h1>EduSupport SMED</h1>
+      <p>{isTI ? 'Visão do Técnico de TI' : 'Visão da Diretoria (Escolas)'}</p>
+      
+      <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <Link to="/secretaria" style={{ textDecoration: 'none' }}>
+          <button style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: !isTI ? 'white' : 'transparent', color: !isTI ? '#0056b3' : 'white', border: '1px solid white', borderRadius: '4px' }}>
+            Acessar como Diretora
           </button>
-          <button 
-            onClick={() => setPerfilAtivo('TI')}
-            style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: perfilAtivo === 'TI' ? 'white' : 'transparent', color: perfilAtivo === 'TI' ? '#343a40' : 'white', border: '1px solid white', borderRadius: '4px' }}
-          >
-            Simular Login: Equipe de TI
+        </Link>
+        <Link to="/ti" style={{ textDecoration: 'none' }}>
+          <button style={{ padding: '0.5rem 1rem', cursor: 'pointer', backgroundColor: isTI ? 'white' : 'transparent', color: isTI ? '#343a40' : 'white', border: '1px solid white', borderRadius: '4px' }}>
+            Acessar como Técnico de TI
           </button>
-        </div>
-      </header>
+        </Link>
+      </div>
+    </header>
+  );
+}
 
-      {/* O React decide qual componente desenhar baseado no botão que você clicou! */}
-      <main style={{ padding: '2rem 0', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
-        {perfilAtivo === 'TI' ? <PainelTI /> : <PainelSecretaria />}
-      </main>
-    </div>
+// =========================================================================
+// 4. O ROTEADOR PRINCIPAL (A Raiz do Sistema)
+// =========================================================================
+function App() {
+  return (
+    <BrowserRouter>
+      <div>
+        <HeaderNavegacao />
+        <main style={{ padding: '2rem 0', backgroundColor: '#f4f7f6', minHeight: '100vh' }}>
+          <Routes>
+            {/* O que renderizar dependendo da URL que estiver no navegador */}
+            <Route path="/" element={<Navigate to="/secretaria" />} /> {/* Joga pro painel inicial */}
+            <Route path="/secretaria" element={<PainelSecretaria />} />
+            <Route path="/ti" element={<PainelTI />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 
