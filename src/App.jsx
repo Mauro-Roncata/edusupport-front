@@ -34,7 +34,7 @@ function HeaderNavegacao({ usuario }) {
   return (
     <header style={{ backgroundColor: isTI ? '#343a40' : '#0056b3', padding: '1rem 2rem', color: 'white', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'background-color 0.3s' }}>
       <div>
-        <h2 style={{ margin: 0 }}>EduSupport SMED</h2>
+        <h2 style={{ margin: 0, color: 'white' }}>EduSupport SMED</h2>
         <small>{isTI ? 'Painel de Controle da TI' : 'Área da Secretaria'}</small>
       </div>
       
@@ -66,6 +66,7 @@ function PainelSecretaria() {
   const [categoria, setCategoria] = useState('');
   const [prioridade, setPrioridade] = useState('V2_MEDIA'); 
   const [idExpandido, setIdExpandido] = useState(null);
+  conts [escola, setEscola] = useState('')
 
   const carregarMeusChamados = async () => {
     try {
@@ -80,13 +81,13 @@ function PainelSecretaria() {
 
   const abrirChamado = async (e) => {
     e.preventDefault();
-    const novoChamado = { titulo, descricao, categoria, prioridade };
+    const novoChamado = { titulo, descricao, categoria, prioridade, escola };
 
     try {
       const resposta = await fetch(API_BASE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include', // <--- AQUI TAMBÉM
+        credentials: 'include',
         body: JSON.stringify(novoChamado)
       });
 
@@ -119,7 +120,7 @@ function PainelSecretaria() {
             {chamados.map(chamado => (
               <React.Fragment key={chamado.id}>
                 <tr onClick={() => setIdExpandido(idExpandido === chamado.id ? null : chamado.id)} style={{ borderBottom: '1px solid #eee', cursor: 'pointer', backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' }}>
-                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td><td style={{ fontWeight: 'bold' }}>{chamado.titulo} ℹ️</td>
+                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td><td style={{ fontWeight: 'bold' }}>{chamado.titulo}</td>
                   <td><span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>{chamado.status}</span></td>
                   <td>{chamado.categoria ? chamado.categoria.replace('_', ' ') : '-'}</td>
                 </tr>
@@ -146,7 +147,7 @@ function PainelTI() {
   const carregarFilaTI = async () => {
     try {
       const url = `${API_BASE_URL}?page=${paginaAtual}&size=10&sort=status,asc&sort=${ordenacao.campo},${ordenacao.direcao}`;
-      const resposta = await fetch(url, { credentials: 'include' }); // <--- AQUI TAMBÉM
+      const resposta = await fetch(url, { credentials: 'include' });
       const dadosPaginados = await resposta.json();
       setChamados(dadosPaginados.content);
       setTotalPages(dadosPaginados.totalPages === 0 ? 1 : dadosPaginados.totalPages);
@@ -177,12 +178,14 @@ function PainelTI() {
       <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '1000px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h2>Fila de Atendimentos</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-          <thead><tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}><th>ID</th><th>Título</th><th>Status</th><th onClick={() => mudarOrdenacao('prioridade')} style={{ cursor: 'pointer' }}>Prioridade ↕</th><th onClick={() => mudarOrdenacao('dataAbertura')} style={{ cursor: 'pointer' }}>Data ↕</th><th>Ações</th></tr></thead>
+          <thead><tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}><th>ID</th><th>Escola / Origem</th><th>Título</th><th>Status</th><th onClick={() => mudarOrdenacao('prioridade')} style={{ cursor: 'pointer' }}>Prioridade ↕</th><th onClick={() => mudarOrdenacao('dataAbertura')} style={{ cursor: 'pointer' }}>Data ↕</th><th>Ações</th></tr></thead>
           <tbody>
             {chamados.map(chamado => (
               <React.Fragment key={chamado.id}>
                 <tr onClick={() => setIdExpandido(idExpandido === chamado.id ? null : chamado.id)} style={{ borderBottom: '1px solid #eee', cursor: 'pointer', backgroundColor: idExpandido === chamado.id ? '#f0f7ff' : 'transparent' }}>
-                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td><td style={{ fontWeight: 'bold' }}>{chamado.titulo} ℹ️</td>
+                  <td style={{ padding: '0.5rem 0' }}>{chamado.id}</td>
+                  <td style={{ fontWeight: 'bold', color: '#0056b3' }}>{chamado.escola || 'Não identificada'}</td>
+                  <td style={{ fontWeight: 'bold' }}>{chamado.titulo}</td>
                   <td><span style={{ color: chamado.status === 'RESOLVIDO' ? 'green' : (chamado.status === 'EM_ANDAMENTO' ? 'orange' : 'red'), fontWeight: 'bold' }}>{chamado.status}</span></td>
                   <td><span style={{ fontWeight: 'bold' }}>{chamado.prioridade ? (chamado.prioridade.includes('_') ? chamado.prioridade.split('_')[1] : chamado.prioridade) : '-'}</span></td>
                   <td>{chamado.dataAbertura ? new Date(chamado.dataAbertura).toLocaleDateString('pt-BR') : '-'}</td>
