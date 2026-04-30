@@ -66,7 +66,7 @@ function PainelSecretaria() {
   const [categoria, setCategoria] = useState('');
   const [prioridade, setPrioridade] = useState('V2_MEDIA'); 
   const [idExpandido, setIdExpandido] = useState(null);
-  conts [escola, setEscola] = useState('')
+  const [escola, setEscola] = useState('')
 
   const carregarMeusChamados = async () => {
     try {
@@ -81,7 +81,7 @@ function PainelSecretaria() {
 
   const abrirChamado = async (e) => {
     e.preventDefault();
-    const novoChamado = { titulo, descricao, categoria, prioridade, escola };
+    const novoChamado = { titulo, descricao, categoria, prioridade};
 
     try {
       const resposta = await fetch(API_BASE_URL, {
@@ -178,7 +178,7 @@ function PainelTI() {
       <section style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '8px', width: '100%', maxWidth: '1000px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
         <h2>Fila de Atendimentos</h2>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-          <thead><tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}><th>ID</th><th>Escola / Origem</th><th>Título</th><th>Status</th><th onClick={() => mudarOrdenacao('prioridade')} style={{ cursor: 'pointer' }}>Prioridade ↕</th><th onClick={() => mudarOrdenacao('dataAbertura')} style={{ cursor: 'pointer' }}>Data ↕</th><th>Ações</th></tr></thead>
+          <thead><tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}><th>ID</th><th>Escola</th><th>Título</th><th>Status</th><th onClick={() => mudarOrdenacao('prioridade')} style={{ cursor: 'pointer' }}>Prioridade ↕</th><th onClick={() => mudarOrdenacao('dataAbertura')} style={{ cursor: 'pointer' }}>Data ↕</th><th>Ações</th></tr></thead>
           <tbody>
             {chamados.map(chamado => (
               <React.Fragment key={chamado.id}>

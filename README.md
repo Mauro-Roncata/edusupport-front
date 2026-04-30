@@ -42,7 +42,7 @@ Para que o frontend funcione corretamente, é estritamente necessário que a [AP
    ```bash
    npm run dev
    
-```
+  ```
 5. A aplicação estará disponível no endereço `http://localhost:5173`.
 
 ## 🌐 Estrutura de Rotas
