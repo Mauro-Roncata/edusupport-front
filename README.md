@@ -42,13 +42,14 @@ Para que o frontend funcione corretamente, é estritamente necessário que a [AP
    ```bash
    npm run dev
    
-  ```
+
+
 5. A aplicação estará disponível no endereço `http://localhost:5173`.
 
 ## 🌐 Estrutura de Rotas
 
-O sistema baseia-se na leitura do endpoint `/api/usuario/me` para liberar o acesso:
+* O sistema baseia-se na leitura do endpoint `/api/usuario/me` para liberar o acesso:
 
-* `/` - Redirecionamento condicional inicial ou exibição da `<TelaLogin/>`.
-* `/secretaria` - Área de atuação das escolas (Abertura e leitura de chamados próprios).
-* `/ti` - Painel de controle da equipe técnica (Fila completa, filtros de prioridade e botões de ação 'Assumir'/'Resolver').
+  * `/` - Redirecionamento condicional inicial ou exibição da `<TelaLogin/>`.
+  * `/secretaria` - Área de atuação das escolas (Abertura e leitura de chamados próprios).
+  * `/ti` - Painel de controle da equipe técnica (Fila completa, filtros de prioridade e botões de ação 'Assumir'/'Resolver').
